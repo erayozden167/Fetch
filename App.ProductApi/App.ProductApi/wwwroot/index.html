@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Product Api</title>
+    <style>
+        table, th, td {
+            border:solid 1px black;
+            border-collapse:collapse;
+        }
+        td{
+            padding-right:20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ÜRÜNLER</h1>
+        <table id="productList" style="border:hidden">
+            
+        </table>
+        <hr />
+        <h1>ÜRÜN GİRİŞİ</h1>
+        <form id="productForm">
+            <label for="name">Ürün adı: </label>
+            <input id="name" type="text" name="name" />
+            <br />
+            <label for="price">Ürün fiyatı: </label>
+            <input id="price" type="number" name="price"  />
+            <br />
+            <label for="category">Ürün kategorisi: </label>
+            <select id="category" name="category">
+                <option value="Empty">Select</option>
+                <option value="Meyve">Meyve</option>
+                <option value="Araba">Araba</option>
+            </select>
+            <br />
+            <button type="submit">
+                Paylaş
+            </button>
+        </form>
+    </div>
+
+
+    <script>
+        // Async promise yapısı döndürür await çözülene kadar beklemesini sağlar ve sadece async fonksiyonunun içinde kullanılır.
+        //GET İŞLEMİ
+        async function fetchProducts() {
+            const products = await fetch('/api/Product');
+            const products = await response.json();
+            const productList = document.getElementById('productList');
+            productList.innerHTML = "";
+
+            products.forEach(product => {
+                const tr = document.createElement('tr');
+
+                let name = product.name;
+                let price = product.price;
+                let category = product.category;
+
+                const productArray = [
+                    name, price, category
+                ];
+
+                for (var i = 0; i < 3; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = `${productArray[i]}`;
+                    tr.appendChild(td);
+                }
+                productList.appendChild(tr);
+                productList.style.border = '1px solid black';
+            });
+        }
+        //Post işlemi
+        document.getElementById('productForm').addEventListener('submit', async (event) => {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const category = document.getElementById('category').value;
+
+            const response = await fetch('/api/Product', {
+                method : 'POST',
+                headers : {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, price, category })
+            })
+            if (response.ok) {
+                fetchProducts();
+                document.getElementById('productForm').reset();
+            }
+        })
+
+        fetchProducts();
+    </script>
+</body>
+</html>
