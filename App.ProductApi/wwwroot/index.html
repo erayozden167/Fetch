@@ -46,7 +46,7 @@
         // Async promise yapısı döndürür await çözülene kadar beklemesini sağlar ve sadece async fonksiyonunun içinde kullanılır.
         //GET İŞLEMİ
         async function fetchProducts() {
-            const products = await fetch('/api/Product');
+            const response = await fetch('/api/Product');
             const products = await response.json();
             const productList = document.getElementById('productList');
             productList.innerHTML = "";
