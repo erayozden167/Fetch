@@ -20,9 +20,10 @@ namespace App.ProductApi.Controllers
                 return item;
         }
         [HttpPost]
-        public void CreateProduct(Product item)
+        public Product CreateProduct(Product item)
         {
             _products.Add(item);
+            return item;
         }
         [HttpPut("{id}")]
         public void UpdateProduct(int id,Product item)
