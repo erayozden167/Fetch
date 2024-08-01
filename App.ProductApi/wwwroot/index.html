@@ -68,6 +68,7 @@
 
             table th, table td {
                 padding: 12px;
+                width:240px;
                 text-align: left;
                 border-bottom: 1px solid #ddd;
             }
@@ -76,9 +77,9 @@
                 background-color: #f2f2f2;
             }
 
-            #productTable{
-                display:none;
-            }
+        #productTable {
+            display: none;
+        }
 
         td button {
             margin-right: 5px;
@@ -151,22 +152,22 @@
             <tbody id="products">
                 <!-- Product rows will go here -->
             </tbody>
-               
+
         </table>
     </div>
-    
+
 
 
     <script>
         // Async promise yapısı döndürür await çözülene kadar beklemesini sağlar ve sadece async fonksiyonunun içinde kullanılır.
         //GET İŞLEMİ
-        
+
         async function fetchProducts() {
             const response = await fetch('/api/Product');
             const products = await response.json();
             const productList = document.getElementById('products');
             productList.innerHTML = "";
-            
+
             products.forEach(product => {
                 const tr = document.createElement('tr');
                 const button = document.createElement('button');
@@ -193,7 +194,7 @@
                     EditProduct(id);
                 })
                 buttonDel.addEventListener('click', () => {
-                    DelProduct(id);                    
+                    DelProduct(id);
                 })
 
                 const productArray = [
@@ -203,12 +204,13 @@
                 for (var i = 0; i < productArray.length; i++) {
                     const td = document.createElement('td');
                     td.textContent = `${productArray[i]}`;
-                    tr.appendChild(td);        
+                    tr.appendChild(td);
                 }
                 tr.appendChild(buttons);
                 productList.appendChild(tr);
             });
         }
+
         let bool = false;
         function ProductDisplay() {
             bool = !bool;
@@ -236,7 +238,7 @@
                 body: JSON.stringify({ name, price, category })
             })
                 .then(response => {
-                        return response.json();
+                    return response.json();
                 })
                 .then(data => {
                     const tr = document.createElement('tr');
@@ -244,7 +246,7 @@
                     const button = document.createElement('button');
                     const buttonDel = document.createElement('button');
                     const buttons = document.createElement('td');
-                                   
+
                     buttonDel.type = 'button';
                     button.type = 'button';
                     buttonDel.className = 'delete-button'; // CSS sınıflarını uygulayın
@@ -285,14 +287,138 @@
             fetch(`/api/Product/${id}`, {
                 method: 'DELETE',
             })
-            const rowToDelete = document.querySelector(`tr[data-id='${id}']`);
-            if (rowToDelete) {
-                rowToDelete.remove();
+            const rowDelete = document.querySelector(`tr[data-id='${id}']`);
+            if (rowDelete) {
+                rowDelete.remove();
+                alert('Silme işlemi başarılı!');
             }
-            alert('Silme işlemi başarılı!');
-        }
-        function EditProduct(id) {
+            else {
+                alert('Silme işlemi yapılamadı öğeyi kontrol ediniz.')
+            }
 
+        }
+        
+        function EditProduct(id) {
+            const rowEdit = document.querySelector(`tr[data-id='${id}']`);
+            if (rowEdit) {
+                const tdElements = rowEdit.querySelectorAll('td');
+                const originalData = [];
+
+                // Orijinal verileri sakla
+                tdElements.forEach(td => {
+                    originalData.push(td.innerText);
+                });
+
+                rowEdit.innerText = "";
+
+                // İnput alanlarını oluştur
+                for (var i = 0; i < tdElements.length - 1; i++) {
+                    const td = document.createElement('td');
+                    let input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = originalData[i];
+                    td.appendChild(input);
+                    rowEdit.appendChild(td);
+                }
+                // Kabul ve Red buttonlarını oluştur
+                const button = document.createElement('button');
+                const buttonCancel = document.createElement('button');
+                button.type = 'button';
+                button.className = 'edit-button';
+                button.onclick = () => Put(id);
+                button.textContent = 'Accept';
+
+                buttonCancel.type = 'button';
+                buttonCancel.textContent = 'Cancel';
+                buttonCancel.className = 'delete-button';
+                buttonCancel.onclick = () => CancelEdit(id, originalData);
+                const tdButton = document.createElement('td');
+
+                tdButton.appendChild(button);
+                tdButton.appendChild(buttonCancel);
+                rowEdit.appendChild(tdButton);
+            }
+        }
+        function CancelEdit(id, originalData) {
+            const rowEdit = document.querySelector(`tr[data-id='${id}']`);
+            if (rowEdit) {
+                rowEdit.innerHTML = "";
+
+                // Orijinal verileri geri yükle
+                for (var i = 0; i < originalData.length - 1; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = originalData[i];
+                    rowEdit.appendChild(td);
+                }
+
+
+                // Edit ve Delete butonlarını geri ekle
+                const buttonsTd = document.createElement('td');
+                const editButton = document.createElement('button');
+                const deleteButton = document.createElement('button');
+
+                editButton.type = 'button';
+                editButton.className = 'edit-button';
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', () => EditProduct(id));
+
+                deleteButton.type = 'button';
+                deleteButton.className = 'delete-button';
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => DelProduct(id));
+
+                buttonsTd.appendChild(editButton);
+                buttonsTd.appendChild(deleteButton);
+
+                rowEdit.appendChild(buttonsTd);
+            }
+        }
+
+        async function Put(id) {
+            const rowEdit = document.querySelector(`tr[data-id='${id}']`);
+            const tdInputs = rowEdit.querySelectorAll('td');
+            const productData = {};
+            let sayac = 0;
+            tdInputs.forEach(td => {
+                if (td.querySelector('input')) {
+                    productData[sayac] = td.querySelector('input').value;
+                    sayac++;
+                }
+            });
+
+            await fetch(`/api/Product/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
+            });
+
+            tdInputs.forEach(td => {
+                if (td.querySelector('input')) {
+                    td.textContent = td.querySelector('input').value;
+                }
+            });
+
+            const buttonsTd = document.createElement('td');
+            const editButton = document.createElement('button');
+            const deleteButton = document.createElement('button');
+
+            editButton.type = 'button';
+            editButton.className = 'edit-button';
+            editButton.textContent = 'Edit';
+            editButton.addEventListener('click', () => EditProduct(id));
+
+            deleteButton.type = 'button';
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', () => DelProduct(id));
+
+            buttonsTd.appendChild(editButton);
+            buttonsTd.appendChild(deleteButton);
+
+            rowEdit.removeChild(tdInputs[tdInputs.length - 1]);
+            rowEdit.appendChild(buttonsTd);
         }
         fetchProducts();
     </script>
