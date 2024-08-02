@@ -4,6 +4,13 @@
     <meta charset="utf-8" />
     <title>Product Api</title>
     <style>
+        .swagger-container{
+            display:flex;
+            justify-content:center;
+        }
+        #swagger{
+            font-size:26px;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
@@ -113,6 +120,10 @@
 
 </head>
 <body>
+    <div class="swagger-container">
+        <a id="swagger" href="https://localhost:7198/swagger/index.html">Click For Swagger !!!</a>
+    </div>
+    
     <div class="container">
         <h1>Product Management</h1>
         <form id="productForm">
@@ -281,6 +292,7 @@
                     }
                     tr.appendChild(buttons);
                     productList.appendChild(tr);
+                    document.getElementById('productForm').reset();
                 })
         })
         function DelProduct(id) {
@@ -377,15 +389,18 @@
         async function Put(id) {
             const rowEdit = document.querySelector(`tr[data-id='${id}']`);
             const tdInputs = rowEdit.querySelectorAll('td');
+            // Anahtar belirle
+            const keys = ['name', 'price', 'category'];
             const productData = {};
-            let sayac = 0;
-            tdInputs.forEach(td => {
-                if (td.querySelector('input')) {
-                    productData[sayac] = td.querySelector('input').value;
-                    sayac++;
+
+            // Her td için işlem
+            tdInputs.forEach((td, index) => {
+                const input = td.querySelector('input');
+                if (input && index < keys.length) {
+                    productData[keys[index]] = input.value;
                 }
             });
-
+            // Put işlemi
             await fetch(`/api/Product/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -393,13 +408,13 @@
                 },
                 body: JSON.stringify(productData)
             });
-
+            // Değer değiştirme
             tdInputs.forEach(td => {
                 if (td.querySelector('input')) {
                     td.textContent = td.querySelector('input').value;
                 }
             });
-
+            //button oluştur.
             const buttonsTd = document.createElement('td');
             const editButton = document.createElement('button');
             const deleteButton = document.createElement('button');
@@ -417,7 +432,7 @@
             buttonsTd.appendChild(editButton);
             buttonsTd.appendChild(deleteButton);
 
-            rowEdit.removeChild(tdInputs[tdInputs.length - 1]);
+            rowEdit.querySelector('td:last-child').remove();
             rowEdit.appendChild(buttonsTd);
         }
         fetchProducts();
